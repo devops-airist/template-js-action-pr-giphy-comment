@@ -1,57 +1,33 @@
+const { Octokit } = require('@octokit/rest');
+const Giphy = require('giphy-api');
 const core = require('@actions/core');
+const github = require('@actions/github');
 
-// Define inputs using the getInput function
-const nameInput = core.getInput('name', { required: true });
-const secretPhoneInput = core.getInput('phone', { required: true });
-const inputCountry = core.getInput('country', { required: true });
+async function run() {
+    try {
+      const githubToken = core.getInput('github-token');
+      const giphyApiKey = core.getInput('giphy-api-key');
+  
+      const octokit = new Octokit({ auth: githubToken });
+      const giphy = Giphy(giphyApiKey);
+  
+      const context = github.context;
+      const { owner, repo, number } = context.issue;
 
-// Check if debug mode is enabled
-if (core.isDebug()) {
-  core.info('This Action is running in debug mode.');
-  core.debug('This Action is running in debug mode.');
-}
-core.info("================================================");
-
-// Prepare a greeting message
-const greeting = `Hello, ${nameInput}, your phone number is ${secretPhoneInput}`;
-// Log messages using the info, notice, warning, and error functions
-core.info(`Information message: ${greeting}`);
-core.notice(`Notice message: ${greeting}`);
-core.warning(`Warning message: ${greeting}`);
-core.error(`Error message: ${greeting}`);
-
-core.info("================================================");
-
-// Set the output named `customized_greeting`
-core.setOutput('customized_greeting', greeting);
-
-// Simulate an error scenario
-if (secretPhoneInput.length !== 10) {
-  core.error(`Error message - provided phone number is invalid  - ${secretPhoneInput}`);
-  //core.setFailed('Invalid phone number provided!');
-} else {
-  switch (inputCountry) {
-    case 'india':
-        //const phoneNumber = "+91" + secretPhoneInput;
-        // Export a variable to the environment
-        core.exportVariable('JS_ACTION_PHONE_VAR', "+91"+secretPhoneInput);
-        break;
-    case 'canada':
-      //const phoneNumber = "+1" + secretPhoneInput;
-      // Export a variable to the environment
-      core.exportVariable('JS_ACTION_PHONE_VAR', "1"+secretPhoneInput);
-        break;
-    default:
-      core.exportVariable('JS_ACTION_PHONE_VAR', secretPhoneInput);
-
-  // Log a notice and summary
-  core.summary(`Action greeted ${nameInput}, set the "greeting" output, and added a path and variable to the environment.`);
-}
-}
-
-core.info("================================================");
-
-// Register a secret using the setSecret function
-core.info(`Received Phone Number: ${secretPhoneInput}`); 
-core.setSecret(secretPhoneInput);
-core.info(`MASKED Received Phone Number: ${secretPhoneInput}`);
+      const prComment = await giphy.random('thank you');
+  
+      await octokit.issues.createComment({
+        owner,
+        repo,
+        issue_number: number,
+        body: `### PR - ${number} \n ### 🎉 Thank you for the contribution! \n ![Giphy](${prComment.data.images.downsized.url}) `
+      });
+  
+      core.setOutput('comment-url', `${prComment.data.images.downsized.url}`);
+      console.log(`Giphy GIF comment added successfully! Comment URL: ${prComment.data.images.downsized.url}`);
+    } catch (error) {
+      console.error('Error:', error);
+      process.exit(1);
+    }
+  }
+  run();

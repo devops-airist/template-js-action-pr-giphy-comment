@@ -1,4 +1,4 @@
-name: 'Giphy PR Comment'
+name: 'KodeKloud Giphy PR Comment'
 description: 'Add a Giphy GIF comment to new pull requests.'
 inputs:
   github-token:
@@ -7,23 +7,11 @@ inputs:
   giphy-api-key:
     description: 'Giphy API Key'
     required: true
-  name:
-    description: 'Sample Hardcoded Name'
-    required: false
-    default: 'Siddharthhhhhhhh'
-  phone:
-    description: 'Sample Hardcoded Name'
-    required: false
-    default: 'Siddharthhhhhhhh'
-  country:
-    description: 'Sample Hardcoded Name'
-    required: false
-    default: 'Siddharthhhhhhhh'
-outputs:
-  customized_greeting:
-   description: 'GitHub Token'
-
 
 runs:
   using: 'node20'
   main: 'dist/index.js'
+
+branding:
+  icon: 'award'
+  color: 'green'
